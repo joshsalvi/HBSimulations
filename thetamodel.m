@@ -1,4 +1,4 @@
-function [Xdet Xsto thetadet thetasto] = thetamodel(I,thetaNoiseSTD,tvec)
+function [Xdet, Xsto, Fext] = thetamodel(I,thetaNoiseSTD,tvec)
 %
 % This function simulates the Ermentrout-Kopell canonical model, also known
 % as the theta model. This is a one-dimensional model of neuron spiking,
@@ -71,7 +71,8 @@ for j = 2:N
 xdet(j) = xdet(j-1) + Dt*(1 - cos(xdet(j-1)) + (1 + cos(xdet(j-1)))*I + Fext(j));
 
 %Stochastic integral
-xsto(j) = xsto(j-1) + Dt*(1 - cos(xsto(j-1)) + (1 + cos(xsto(j-1)))*I + Fext(j)) + thetaNoiseSTD*dW(j);
+%xsto(j) = xsto(j-1) + Dt*(1 - cos(xsto(j-1)) + (1 + cos(xsto(j-1)))*I + Fext(j)) + thetaNoiseSTD*dW(j);
+xsto(j) = xsto(j-1) + Dt*(1 - cos(xsto(j-1)) + (1 + cos(xsto(j-1)))*(I - thetaNoiseSTD^2/2*sin(xsto(j-1)))) + thetaNoiseSTD*(1 + cos(xsto(j-1)))*dW(j);
 
 end
 
@@ -95,7 +96,7 @@ plotyn=0;
 if plotyn==1
     figure;
     subplot(1,2,1);hold on;plot(tvec(2:end),Xsto,'r');plot(tvec(2:end),Xdet,'k');title('Black=deterministic; Red=stochastic');
-    subplot(1,2,2);hold on;plot(exp(-i*thetasto),'r');plot(exp(-i*thetadet),'k');title('Black=deterministic; Red=stochastic');
+    subplot(1,2,2);hold on;plot(exp(-1i*thetasto),'r');plot(exp(-1i*thetadet),'k');title('Black=deterministic; Red=stochastic');
 end
 
 
