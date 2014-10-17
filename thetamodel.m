@@ -36,10 +36,10 @@ thetazero = 1;
 
 % Add external forcing if desired
 sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
-Fextmax = 1;        % amplitude of sinusoidal stim OR pulse
+Fextmax = 0;        % amplitude of sinusoidal stim OR pulse
 fr = 5;             % frequency of stimulation
-pulsestart = 1;     % start of pulse
-pulseend = 2;       % end of pulse
+pulsestart = 400;     % start of pulse
+pulseend = 410;       % end of pulse
 
 % Decrease time step size by factor of Dtfac to ensure convergence
 Dtfac = 10^2;
@@ -72,7 +72,7 @@ xdet(j) = xdet(j-1) + Dt*(1 - cos(xdet(j-1)) + (1 + cos(xdet(j-1)))*I + Fext(j))
 
 %Stochastic integral
 %xsto(j) = xsto(j-1) + Dt*(1 - cos(xsto(j-1)) + (1 + cos(xsto(j-1)))*I + Fext(j)) + thetaNoiseSTD*dW(j);
-xsto(j) = xsto(j-1) + Dt*(1 - cos(xsto(j-1)) + (1 + cos(xsto(j-1)))*(I - thetaNoiseSTD^2/2*sin(xsto(j-1)))) + thetaNoiseSTD*(1 + cos(xsto(j-1)))*dW(j);
+xsto(j) = xsto(j-1) + Dt*(1 - cos(xsto(j-1)) + (1 + cos(xsto(j-1)))*(I - thetaNoiseSTD^2/2*sin(xsto(j-1))) + Fext(j)) + thetaNoiseSTD*(1 + cos(xsto(j-1)))*dW(j);
 
 end
 
@@ -83,12 +83,15 @@ thetasto = zeros(1,length(tvec)-1);
 %Return vectors at times specified by Time.
 thetadet(1,:) = xdet(1:Dtfac:N);
 thetasto(1,:) = xsto(1:Dtfac:N);
+Fext = Fext(1:Dtfac:N);
 
 % Convert these values into time traces (theta is the angle around a unit
 % circle). Use thetadet and thetasto to find the phase plane of the signal
 % if you so desire
 Xdet = sin(thetadet);
 Xsto = sin(thetasto);
+Xdet=Xdet-mean(Xdet);
+Xsto=Xsto-mean(Xsto);
 
 % Make a plot of the data?
 plotyn=0;
@@ -97,6 +100,8 @@ if plotyn==1
     figure;
     subplot(1,2,1);hold on;plot(tvec(2:end),Xsto,'r');plot(tvec(2:end),Xdet,'k');title('Black=deterministic; Red=stochastic');
     subplot(1,2,2);hold on;plot(exp(-1i*thetasto),'r');plot(exp(-1i*thetadet),'k');title('Black=deterministic; Red=stochastic');
+    figure;
+    plot(tvec(1:length(Fext)),Fext);
 end
 
 

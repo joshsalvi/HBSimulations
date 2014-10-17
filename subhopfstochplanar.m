@@ -1,27 +1,32 @@
-function [Xdet Xsto] = saddlenodestoch(r,xNoiseSTD,yNoiseSTD,tvec)
+function [Xdet, Xsto, Fext] = subhopfstochplanar(mu,fosc,xNoiseSTD,yNoiseSTD,tvec)
 %
-% This function simulates the normal form of the saddle node
-% bifurcation, given by the equations:
+% This function simulates the normal form of the supercritical Hopf
+% bifurcation, given by two planar equations:
 %
-% x_dot = r - x^2
-% y_dot = -y
+% x_dot = mu*x - omega*y - x*(x^2 + y^2)
+% y_dot = omega*x + mu*y - y*(x^2 + y^2)
 %
-% where r is the control parameter. For r>0, the system will have two
-% stable points.
+% where mu is the control parameter. For mu>0, the system will oscillate at
+% an amplitude that grows with sqrt(mu). Alternatively, one may express the
+% above equations in polar coordinates, making the amplitude relationship
+% with respect to mu more apparent:
+%
+% rho_dot = rho*(mu + i*omega - rho^2)
 %
 % Here we simulate both the deterministic and stochastic cases for the
-% saddle node bifurcation.
+% supercritical Hopf bifurcation 
 %
-% [Xdet Xsto] = saddlenodestoch(r,xNoiseSTD,yNoiseSTD,tvec)
+% [Xdet Xsto] = hopfstoch(mu,fosc,xNoiseSTD,yNoiseSTD,tvec)
 %
 % Xdet : deterministic result
 % Xsto : stochastic result
 %
 %  
 % tvec : time vector
-% r : control parameter
-% xNoiseSTD : standard deviation of stochastic noise in x (real)
-% yNoiseSTD : standard deviation of stochastic noise in y (imag)
+% mu : control parameter
+% xNoiseSTD : standard deviation of stochastic noise in x
+% yNoiseSTD : standard deviation of stochastic noise in y
+% fosc : frequency of oscillation on the unstable side of the bifurcation
 %
 % By modifying the code, you can also add a step function or external
 % forcing. 
@@ -30,8 +35,8 @@ function [Xdet Xsto] = saddlenodestoch(r,xNoiseSTD,yNoiseSTD,tvec)
 %
 
 % Initial condition
-xzero = -1e-14;
-yzero = 1e-14;
+xzero = 0.01;
+yzero = -0.01;
 
 % Add external forcing if desired
 sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
@@ -71,14 +76,12 @@ end
 % Euler-Murayama Method with Ito Integration
 for j = 2:N
 %Deterministic integral
-%xdet(j) = xdet(j-1) + Dt*(mu*xdet(j-1) - 2*pi*fosc*ydet(j-1) + xdet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) - 50*xdet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + Fext(j));
-%ydet(j) = ydet(j-1) + Dt*(2*pi*fosc*xdet(j-1) + mu*ydet(j-1) + ydet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) - 50*ydet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + Fext(j));
-xdet(j) = xdet(j-1) + Dt*(-r + xdet(j-1)^2 + (Fext(j)));
+xdet(j) = xdet(j-1) + Dt*(mu*xdet(j-1) - 2*pi*fosc*ydet(j-1) + xdet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) - xdet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + real(Fext(j)));
+ydet(j) = ydet(j-1) + Dt*(2*pi*fosc*xdet(j-1) + mu*ydet(j-1) + ydet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) - ydet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + imag(Fext(j)));
 
 %Stochastic integral
-%xsto(j) = xsto(j-1) + Dt*(mu*xsto(j-1) - 2*pi*fosc*ysto(j-1) + xsto(j-1)*(xsto(j-1)^2 + ysto(j-1)^2) - 50*xdet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + Fext(j)) + xNoiseSTD*xdW(j);
-%ysto(j) = ysto(j-1) + Dt*(2*pi*fosc*xsto(j-1) + mu*ysto(j-1) + ysto(j-1)*(xsto(j-1)^2 + ysto(j-1)^2) - 50*ydet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + Fext(j)) + yNoiseSTD*ydW(j);
-xsto(j) = xsto(j-1) + Dt*(-r + xsto(j-1)^2 + (Fext(j))) + xNoiseSTD*xdW(j);
+xsto(j) = xsto(j-1) + Dt*(mu*xsto(j-1) - 2*pi*fosc*ysto(j-1) + xsto(j-1)*(xsto(j-1)^2 + ysto(j-1)^2) - xdet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + real(Fext(j))) + xNoiseSTD*xdW(j);
+ysto(j) = ysto(j-1) + Dt*(2*pi*fosc*xsto(j-1) + mu*ysto(j-1) + ysto(j-1)*(xsto(j-1)^2 + ysto(j-1)^2) - ydet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + imag(Fext(j))) + yNoiseSTD*ydW(j);
 
 end
 
@@ -98,5 +101,8 @@ plotyn=1;
 if plotyn==1
     figure;
     subplot(1,2,1);hold on;plot(tvec(2:end),Xsto(1,:),'r');plot(tvec(2:end),Xdet(1,:),'k');title('Black=deterministic; Red=stochastic; real part only');
-    subplot(1,2,2);hold on;plot(real(hilbert(Xsto(1,:))),imag(Xsto(1,:)),'r');plot(real(Xdet(1,:)),imag(Xdet(1,:)),'k');title('Black=deterministic; Red=stochastic');end
+    subplot(1,2,2);hold on;plot(Xsto(1,:),Xsto(2,:),'r');plot(Xdet(1,:),Xdet(2,:),'k');title('Black=deterministic; Red=stochastic');
+end
+
+
 end

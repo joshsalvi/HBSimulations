@@ -4,7 +4,7 @@ function [Xdet, Xsto, Fext] = subhopfstoch(mu,omega,xNoiseSTD,yNoiseSTD,tvec)
 % bifurcation, given by two polar equations:
 %
 % r_dot = mu*r + r^3 - r^5
-% theta_dot = omega + b*r^3
+% theta_dot = omega
 %
 % where mu is the control parameter. For mu>0, the system will oscillate at
 % a high amplitude. 
@@ -36,10 +36,10 @@ yzero = 1e-14;
 
 % Add external forcing if desired
 sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
-Fextmax = 1;        % amplitude of sinusoidal stim OR pulse
+Fextmax = 0;        % amplitude of sinusoidal stim OR pulse
 fr = 5;             % frequency of stimulation
-pulsestart = 1;     % start of pulse
-pulseend = 2;       % end of pulse
+pulsestart = 500;     % start of pulse
+pulseend = 500.01;       % end of pulse
 
 % Decrease time step size by factor of Dtfac to ensure convergence
 Dtfac = 10^2;
