@@ -1,18 +1,16 @@
-function [Xdet, Xsto, Fext] = saddlenodestoch(r,xNoiseSTD,tvec)
+function [Xdet, Xsto, Fext] = bistablestoch(r,xNoiseSTD,tvec)
 %
-% This function simulates the normal form of the saddle node
-% bifurcation, given by the equations:
+% This function simulates the Langevin equation
+% given by the following:
 %
-% x_dot = r - x^2
-% y_dot = -y
+% x_dot = r*x - x^3 + noise
 %
-% where r is the control parameter. For r>0, the system will have two
-% stable points.
+% where r is a control parameter. 
 %
 % Here we simulate both the deterministic and stochastic cases for the
 % saddle node bifurcation.
 %
-% [Xdet Xsto] = saddlenodestoch(r,xNoiseSTD,yNoiseSTD,tvec)
+% [Xdet, Xsto, Fext] = bistablestoch(r,xNoiseSTD,tvec)
 %
 % Xdet : deterministic result
 % Xsto : stochastic result
@@ -20,8 +18,7 @@ function [Xdet, Xsto, Fext] = saddlenodestoch(r,xNoiseSTD,tvec)
 %  
 % tvec : time vector
 % r : control parameter
-% xNoiseSTD : standard deviation of stochastic noise in x (real)
-% yNoiseSTD : standard deviation of stochastic noise in y (imag)
+% xNoiseSTD : standard deviation of stochastic noise in x
 %
 % By modifying the code, you can also add a step function or external
 % forcing. 
@@ -68,18 +65,18 @@ for j = 2:N
 %Deterministic integral
 %xdet(j) = xdet(j-1) + Dt*(mu*xdet(j-1) - 2*pi*fosc*ydet(j-1) + xdet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) - 50*xdet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + Fext(j));
 %ydet(j) = ydet(j-1) + Dt*(2*pi*fosc*xdet(j-1) + mu*ydet(j-1) + ydet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) - 50*ydet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + Fext(j));
-xdet(j) = xdet(j-1) + Dt*(-r + xdet(j-1)^2 + (Fext(j)));
+xdet(j) = xdet(j-1) + Dt*(r*xdet(j-1) - xdet(j-1)^3 + (Fext(j)));
 
 %Stochastic integral
 %xsto(j) = xsto(j-1) + Dt*(mu*xsto(j-1) - 2*pi*fosc*ysto(j-1) + xsto(j-1)*(xsto(j-1)^2 + ysto(j-1)^2) - 50*xdet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + Fext(j)) + xNoiseSTD*xdW(j);
 %ysto(j) = ysto(j-1) + Dt*(2*pi*fosc*xsto(j-1) + mu*ysto(j-1) + ysto(j-1)*(xsto(j-1)^2 + ysto(j-1)^2) - 50*ydet(j-1)*(xdet(j-1)^4 + ydet(j-1)^4) + Fext(j)) + yNoiseSTD*ydW(j);
-xsto(j) = xsto(j-1) + Dt*(-r + xsto(j-1)^2 + (Fext(j))) + xNoiseSTD*xdW(j);
+xsto(j) = xsto(j-1) + Dt*(r*xsto(j-1) - xsto(j-1)^3 + (Fext(j))) + xNoiseSTD*xdW(j);
 
 end
 
 
-Xdet = zeros(2,length(tvec)-1);
-Xsto = zeros(2,length(tvec)-1);
+Xdet = zeros(1,length(tvec)-1);
+Xsto = zeros(1,length(tvec)-1);
 
 %Return vectors at times specified by Time.
 Xdet(1,:) = xdet(1:Dtfac:N);

@@ -4,16 +4,12 @@ function [Xdet Xem] = HBmodelEM(Time,Fextmax,fr)
 %EM Euler-Maruyama method
 %Ito integral
 
-a = 480;
+a = 3.5;
 %b > 1 has unbounded solutions
-b = 0.978;
-tau = 100;
-Fshift = 10000;
-Fc = 0 + Fshift;
-ke = 150; 
-gamma = 1.8*10^2;
-ksp = 130;
-k = ksp + ke;
+b = 0.5;
+tau = 10;
+Fc = 0;
+k = 3;
 
 xzero = 1; 
 fzero = 0;
@@ -42,7 +38,7 @@ fdet(1) = fzero;
 fem(1) = fzero;
 
 %Not using FD theorem
-xNoiseSTD = .5;
+xNoiseSTD = 0;
 fNoiseSTD = 0;
 
 Ftime = linspace(Time(1),Time(end),N);
@@ -50,12 +46,12 @@ Fext = Fextmax*cos(2*pi*fr*Ftime);
 
 for j = 2:N
 %Deterministic integral
-xdet(j) = xdet(j-1) + Dt*((-k*xdet(j-1) + a*(xdet(j-1)-fdet(j-1)) - (xdet(j-1)-fdet(j-1))^3 + Fc + Fext(j))/gamma);
-fdet(j) = fdet(j-1) + Dt*((b*xdet(j-1) - fdet(j-1))/tau);
+xdet(j) = xdet(j-1) + Dt*(-k*xdet(j-1) + a*(xdet(j-1)-fdet(j-1)) - (xdet(j-1)-fdet(j-1))^3 + Fc + Fext(j));
+fdet(j) = fdet(j-1) + Dt*(b*xdet(j-1) - fdet(j-1))/tau;
 
 %Stochastic integral
-xem(j) = xem(j-1) + Dt*((-k*xem(j-1) + a*(xem(j-1)-fem(j-1)) - (xem(j-1)-fem(j-1))^3 + Fc + Fext(j))/gamma) + xNoiseSTD*xdW(j);
-fem(j) = fem(j-1) + Dt*((b*xem(j-1) - fem(j-1))/tau) + fNoiseSTD*fdW(j);
+xem(j) = xem(j-1) + Dt*(-k*xem(j-1) + a*(xem(j-1)-fem(j-1)) - (xem(j-1)-fem(j-1))^3 + Fc + Fext(j)) + xNoiseSTD*xdW(j);
+fem(j) = fem(j-1) + Dt*(b*xem(j-1) - fem(j-1))/tau + fNoiseSTD*fdW(j)/tau;
 end
 
 Xdet = zeros(2,length(Time));
@@ -67,13 +63,12 @@ Xdet(2,:) = fdet(1:Dtfac:N);
 Xem(1,:) = xem(1:Dtfac:N);
 Xem(2,:) = fem(1:Dtfac:N);
 
-plotcheck = 0;
+plotcheck = 1;
 if plotcheck == 1
 figure
 plot(Ftime,xem,'r');
 hold on
 plot(Ftime,xdet,'k');
-axis([Ftime(end)-10*100 Ftime(end) 1.1*min(xem) 1.1*max(xem)])
 xlabel('Time','FontSize',24) 
 ylabel('x','FontSize',24,'Rotation',0,'HorizontalAlignment','right')
 
