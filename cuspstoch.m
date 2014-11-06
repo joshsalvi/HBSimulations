@@ -9,7 +9,7 @@ function [Xdet, Xsto, Fext] = cuspstoch(b1,b2,xNoiseSTD,tvec)
 % Here we simulate both the deterministic and stochastic cases for the
 % fold bifurcation . 
 %
-% [Xdet, Xsto, Fext] = cuspstoch(mu,b1,xNoiseSTD,tvec)
+% [Xdet, Xsto, Fext] = cuspstoch(b1,b2,xNoiseSTD,tvec)
 %
 % Xdet : deterministic result
 % Xsto : stochastic result

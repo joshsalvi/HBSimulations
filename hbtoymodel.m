@@ -38,7 +38,7 @@ fzero = 0;
 Dtfac = 10^2;
 Dt = (tvec(2)-tvec(1))/Dtfac;
 
-N = tvec(end)/Dt;
+N = round(tvec(end)/Dt);
 
 %Set the default random number stream
 RandStream.setGlobalStream(RandStream('mt19937ar','seed',1))
