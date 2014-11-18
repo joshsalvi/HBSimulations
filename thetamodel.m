@@ -14,7 +14,7 @@ function [Xdet, Xsto, Fext] = thetamodel(I,thetaNoiseSTD,tvec)
 % Here we simulate both the deterministic and stochastic cases for the
 % theta model. 
 %
-% [Xdet Xsto thetadet thetasto] = thetamodel(mu,thetaNoiseSTD,tvec)
+% [Xdet, Xsto, Fext] = thetamodel(I,thetaNoiseSTD,tvec)
 %
 % Xdet : deterministic result
 % Xsto : stochastic result
@@ -88,8 +88,8 @@ Fext = Fext(1:Dtfac:N);
 % Convert these values into time traces (theta is the angle around a unit
 % circle). Use thetadet and thetasto to find the phase plane of the signal
 % if you so desire
-Xdet = sin(thetadet);
-Xsto = sin(thetasto);
+Xdet = cos(thetadet);
+Xsto = cos(thetasto);
 Xdet=Xdet-mean(Xdet);
 Xsto=Xsto-mean(Xsto);
 
