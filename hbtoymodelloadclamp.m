@@ -1,4 +1,4 @@
-function [Xdet, Xsto, Deltadet, Deltasto, Xcdet,Xcsto, Fext2,xdetdd] = hbtoymodelloadclamp(Fc,k,noiselevel,Fextmax,fr,ksf,Fe,kv,ev,mv,G,tvec)
+function [Xdet, Xsto, Deltadet, Deltasto] = hbtoymodelloadclamp(Fc,k,noiselevel,Fextmax,fr,ksf,Fe,kv,ev,mv,G,tvec)
 %
 % This function simulates the hair-buyndle model from PNAS 2012.
 %
@@ -121,9 +121,8 @@ Xdet(1,:) = xdet(1:Dtfac:N);
 Xdet(2,:) = fdet(1:Dtfac:N);
 Xsto(1,:) = xsto(1:Dtfac:N);
 Xsto(2,:) = fsto(1:Dtfac:N);
-Fext2(1,:) = Fext(1:Dtfac:N);
 
-plotyn = 1;
+plotyn = 0;
 if plotyn == 1
 figure
 plot(Ftvec(1:end),xsto,'r');
