@@ -1,4 +1,4 @@
-function [Xdet, Xsto, Deltadet, Deltasto, Xcdet,Xcsto, Fext2] = hbtoymodelloadclamp(Fc,k,noiselevel,Fextmax,fr,ksf,Fe,kv,ev,mv,G,tvec)
+function [Xdet, Xsto, Deltadet, Deltasto, Xcdet,Xcsto, Fext2,xdetdd] = hbtoymodelloadclamp(Fc,k,noiselevel,Fextmax,fr,ksf,Fe,kv,ev,mv,G,tvec)
 %
 % This function simulates the hair-buyndle model from PNAS 2012.
 %
@@ -39,17 +39,17 @@ b = 0.5;
 tau = 10;
 xzero = 1; 
 fzero = 0;
-Deltadet(1:2) = 0;Xcdet(1:2) = 0;
-Deltasto(1:2) = 0;Xcsto(1:2) = 0;
+Deltadet(1:3) = 0;Xcdet(1:3) = 0;
+Deltasto(1:3) = 0;Xcsto(1:3) = 0;
 Vc(1:2) = 0;
-alpha = 1;
-beta = 1;
-edx = 0;
-exx = 0;
+alpha = 10;
+beta = .1;
+edx = 1e-3;
+exx = 1e-3;
 
 
 %Decrease tvec step size by factor of Dtfac to ensure convergence
-Dtfac = 10^2;
+Dtfac = 1;
 Dt = (tvec(2)-tvec(1))/Dtfac;
 
 N = round(tvec(end)/Dt);
@@ -78,14 +78,14 @@ Fext = Fextmax*cos(2*pi*fr*Ftvec);
 
 for j = 2:N
     
-if j > 2
+if j > 3
 %Load Clamp - Deterministic
-xdetd(j) = (xdet(j)-xdet(j-1))/Dt;
-xdetdd(j) = (xdet(j)-2*xdet(j-1)+xdet(j-2))/Dt;
-xstod(j) = (xsto(j)-xsto(j-1))/Dt;
-xstodd(j) = (xsto(j)-2*xsto(j-1)+xsto(j-2))/Dt;
-Xcdet(j) = (edx*Xcdet(j-1))/((edx-ksf*Dt)*alpha) + Dt*((mv*xdetdd(j)+(ev-exx+alpha*beta*G*edx)*xdetd(j)+(kv-(1+alpha*beta*G)*ksf)*xdet(j)-Fe)/(alpha*beta*G*(edx-ksf*Dt)));
-Xcsto(j) = (edx*Xcsto(j-1))/((edx-ksf*Dt)*alpha) + Dt*((mv*xstodd(j)+(ev-exx+alpha*beta*G*edx)*xstod(j)+(kv-(1+alpha*beta*G)*ksf)*xsto(j)-Fe)/(alpha*beta*G*(edx-ksf*Dt)));
+xdetd(j) = diff([xdet(j-1) xdet(j-2)]);
+xdetdd(j) = diff([xdet(j-1) xdet(j-2) xdet(j-3)],2);
+xstod(j) = diff([xsto(j-1) xsto(j-2)]);
+xstodd(j) = diff([xsto(j-1) xsto(j-2) xsto(j-3)],2);
+Xcdet(j) = (edx*Xcdet(j-1))/((edx-ksf*Dt)*alpha) + Dt*((mv*xdetdd(j)+(ev-exx+alpha*beta*G*edx)*xdetd(j)+(kv-(1+alpha*beta*G)*ksf)*xdet(j-1)-Fe)/(alpha*beta*G*(edx-ksf*Dt)));
+Xcsto(j) = (edx*Xcsto(j-1))/((edx-ksf*Dt)*alpha) + Dt*((mv*xstodd(j)+(ev-exx+alpha*beta*G*edx)*xstod(j)+(kv-(1+alpha*beta*G)*ksf)*xsto(j-1)-Fe)/(alpha*beta*G*(edx-ksf*Dt)));
 Deltadet(j) = G*beta*alpha*(Xcdet(j)-xdet(j-1));
 Deltasto(j) = G*beta*alpha*(Xcsto(j)-xsto(j-1));
 %Vcdet(j) = (edx*Vcdet(j-1))/(edx-ksf*Dt) + Dt*((mv*xdetdd(j)+(ev-exx+G*edx)*xdetd(j)+(kv-(1+G)*ksf)*xdet(j)-Fe)/(G*(edx-ksf*Dt)));
@@ -99,11 +99,15 @@ end
 end
 
 %Deterministic integral
-xdet(j) = xdet(j-1) + Dt*(-k*xdet(j-1) + a*(xdet(j-1)-fdet(j-1)) - (xdet(j-1)-fdet(j-1))^3 + Fc + Fext(j) + ksf*(Deltadet(j)-xdet(j-1))) + k*Deltadet(j);
+fsfdet(j) = ksf*(Deltadet(j)-xdet(j-1));
+xsfdet(j) = fsfdet(j)/k;
+xdet(j) = xdet(j-1) + Dt*(-k*xdet(j-1) + a*(xdet(j-1)-fdet(j-1)) - (xdet(j-1)-fdet(j-1))^3 + Fc + Fext(j) + fsfdet(j));
 fdet(j) = fdet(j-1) + Dt*(b*xdet(j-1) - fdet(j-1))/tau;
 
 %Stochastic integral
-xsto(j) = xsto(j-1) + Dt*(-k*xsto(j-1) + a*(xsto(j-1)-fsto(j-1)) - (xsto(j-1)-fsto(j-1))^3 + Fc + Fext(j) + ksf*(Deltasto(j)-xsto(j-1))) + xNoiseSTD*xdW(j) + k*Deltasto(j);
+fsfsto(j) = ksf*(Deltasto(j)-xsto(j-1));
+xsfsto(j) = fsfsto(j)/k;
+xsto(j) = xsto(j-1) + Dt*(-k*xsto(j-1) + a*(xsto(j-1)-fsto(j-1)) - (xsto(j-1)-fsto(j-1))^3 + Fc + Fext(j) + fsfsto(j)) + xNoiseSTD*xdW(j);
 fsto(j) = fsto(j-1) + Dt*(b*xsto(j-1) - fsto(j-1))/tau + fNoiseSTD*fdW(j)/tau;
 
 end
