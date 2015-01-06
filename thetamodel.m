@@ -100,8 +100,8 @@ if plotyn==1
     figure;
     subplot(1,2,1);hold on;plot(tvec(2:end),Xsto,'r');plot(tvec(2:end),Xdet,'k');title('Black=deterministic; Red=stochastic');
     subplot(1,2,2);hold on;plot(exp(-1i*thetasto),'r');plot(exp(-1i*thetadet),'k');title('Black=deterministic; Red=stochastic');
-    figure;
-    plot(tvec(1:length(Fext)),Fext);
+    %figure;
+    %plot(tvec(1:length(Fext)),Fext);
 end
 
 

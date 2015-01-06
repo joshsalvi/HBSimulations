@@ -59,7 +59,7 @@ Xdet(2,:) = fdet(find(mod(1:N,Dtfac) == 0));
 Xem(1,:) = xem(find(mod(1:N,Dtfac) == 0));
 Xem(2,:) = fem(find(mod(1:N,Dtfac) == 0));
 
-plotcheck = 0;
+plotcheck = 1;
 if plotcheck == 1
 figure
 plot(Time,Xem(1,:),'r');

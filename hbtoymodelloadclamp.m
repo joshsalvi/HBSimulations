@@ -122,7 +122,7 @@ Xdet(2,:) = fdet(1:Dtfac:N);
 Xsto(1,:) = xsto(1:Dtfac:N);
 Xsto(2,:) = fsto(1:Dtfac:N);
 
-plotyn = 0;
+plotyn = 1;
 if plotyn == 1
 figure
 plot(Ftvec(1:end),xsto,'r');
