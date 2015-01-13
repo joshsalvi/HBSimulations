@@ -1,4 +1,4 @@
-evmv=2; % 1: evmv only;  2: evmv with forcing
+evmv=1; % 1: evmv only;  2: evmv with forcing
     
 Xdet=squeeze(Xdet);
 Xsto=squeeze(Xsto);
@@ -305,7 +305,7 @@ title('Stochastic (noise=0.2) - Frequency');
 
 %% plot time traces for ev/mv
 indF = [1 1 1 1 1 1];
-indk = ones(1,6).*1;
+indk = ones(1,6).*3;
 indG = [3 3 3 3 3 3];
 indksf = [2 2 2 2 2 2];
 indev = [16 31 1 16 16 16];

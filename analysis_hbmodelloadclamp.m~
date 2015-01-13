@@ -1,4 +1,4 @@
-evmv=2; % 1: evmv only;  2: evmv with forcing
+evmv=1; % 1: evmv only;  2: evmv with forcing
     
 Xdet=squeeze(Xdet);
 Xsto=squeeze(Xsto);
@@ -76,7 +76,7 @@ for j = 1:sizeX(1)
     for k = 1:sizeX(2)
         for l = 1:sizeX(3)
             for m = 1:sizeX(4)
-                for n = 1:sizeX(5)
+                n=1;
                 trsto=Xsto{j,k,l,m,n}(round(L/4):end)-smooth(Xsto{j,k,l,m,n}(round(L/4):end),length(Xsto{j,k,l,m,n}(round(L/4):end))/4)';
                 trdet=Xdet{j,k,l,m,n}(round(L/4):end)-smooth(Xdet{j,k,l,m,n}(round(L/4):end),length(Xdet{j,k,l,m,n}(round(L/4):end))/4)';
                 [Xstofft{j,k,l,m,n}, fstofft{j,k,l,m,n}]= pwelch(trsto,winfunc,noverlap,NPSD,Fs);
@@ -118,7 +118,6 @@ for j = 1:sizeX(1)
                  
     end
     end
-end
 end
 end
 else
@@ -305,12 +304,12 @@ title('Stochastic (noise=0.2) - Frequency');
 
 %% plot time traces for ev/mv
 indF = [1 1 1 1 1 1];
-indk = [1 1 1 2 2 2];
+indk = ones(1,6).*3;
 indG = [3 3 3 3 3 3];
 indksf = [2 2 2 2 2 2];
 indev = [16 31 1 16 16 16];
 indmv = [16 16 16 31 1 16];
-tstart=500;
+tstart=700;
 g=findnearest(t,tstart);g=g(1);
 
 figure;
@@ -318,7 +317,7 @@ for j = 1:6
     subplot(3,2,j);
     L=length(Xdet{indk(j),indev(j),indmv(j),indG(j),indksf(j)}(1,g:end));
     plot(t(1:L),Xsto{indk(j),indev(j),indmv(j),indG(j),indksf(j)}(1,g:end),'r','LineWidth',0.2);
-    hold on;plot(t(1:L),Xdet{indF(j),indk(j),indG(j),indksf(j)}(1,g:end),'k','LineWidth',1);
-    xlabel('time');ylabel('hb position');title(sprintf('%s%s %s%s %s%s %s%s %s%s %s%s','kv=',num2str(kv(indk(j))),'ev=',num2str(ev(indev(j))),'mv=',num2str(mv(indmv(j))),'G=',num2str(G(indG(j))),'ksf=',num2str(ksf(indksf(j))));
-    axis([0 tstart -1.7 1.7])
+    hold on;plot(t(1:L),Xdet{indk(j),indev(j),indmv(j),indG(j),indksf(j)}(1,g:end),'k','LineWidth',1);
+    xlabel('time');ylabel('hb position');title(sprintf('%s%s %s%s %s%s %s%s %s%s %s%s','kv=',num2str(kv(indk(j))),'ev=',num2str(ev(indev(j))),'mv=',num2str(mv(indmv(j))),'G=',num2str(G(indG(j))),'ksf=',num2str(ksf(indksf(j)))));
+    axis([0 t(end)-tstart -1.7 1.7])
 end
