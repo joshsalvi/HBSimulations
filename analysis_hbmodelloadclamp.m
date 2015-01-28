@@ -1,4 +1,4 @@
-evmv=2; % 1: evmv only;  2: evmv with forcing
+evmv=0; % 1: evmv only;  2: evmv with forcing
     
 Xdet=squeeze(Xdet);
 Xsto=squeeze(Xsto);
@@ -36,6 +36,7 @@ for j = 1:sizeX(1)
                 % Is the peak a minimum height? If not, set ampl/freq to zero.
             
                 Xstofftmaxind = find(Xstofft(fstoind)==max(Xstofft(fstoind)));
+                 if isempty(Xstofftmaxind) ==0
                 fftamplsto(j,k,l,m) = Xstofft(fstoind(Xstofftmaxind(1)));
                 fftamplsto(j,k,l,m) = (sqrt(fscale.*fftamplsto(j,k,l,m).*(2.*Fs.*XsegL.*(sum(abs(winfunc).^2)./XsegL)))./XsegL)./winpeaknorm;        
                 fftfreqsto(j,k,l,m) = fstofft(fstoind(Xstofftmaxind(1)));           
@@ -43,8 +44,13 @@ for j = 1:sizeX(1)
                     fftfreqsto(j,k,l,m) = 0;
                     fftamplsto(j,k,l,m) = 0;
                 end
-                
+                 else
+                     fftfreqsto(j,k,l,m) = 0;
+                    fftamplsto(j,k,l,m) = 0;
+                 end
+                 
                 Xdetfftmaxind = find(Xdetfft(fdetind)==max(Xdetfft(fdetind)));
+                 if isempty(Xdetfftmaxind) ==0     
                 fftampldet(j,k,l,m) = Xdetfft(fdetind(Xdetfftmaxind(1)));
                 fftampldt(j,k,l,m) = (sqrt(fscale.*fftampldet(j,k,l,m).*(2.*Fs.*XsegL.*(sum(abs(winfunc).^2)./XsegL)))./XsegL)./winpeaknorm;
                 fftfreqdet(j,k,l,m) = fdetfft(fdetind(Xdetfftmaxind(1)));            
@@ -52,6 +58,10 @@ for j = 1:sizeX(1)
                     fftfreqdet(j,k,l,m) = 0;
                     fftampldet(j,k,l,m) = 0;
                 end
+                 else
+                     fftfreqsto(j,k,l,m) = 0;
+                    fftamplsto(j,k,l,m) = 0;
+                 end
     end
     end
 end

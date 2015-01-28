@@ -1,15 +1,17 @@
-function [Xdet, Xsto,Podet] = nadrowskimodel(S,fmax,noiselevel,tvec)
+function [Xdet, Xsto, cdet, Fext2] = hbtoymodelcamalet2(Fc,kc,tauc,delta,S,noiselevel,Fextmax,fr,tvec)
 %
-% This function simulates a hair bundle (Nadrowski et al 2004)
+% This function simulates the hair-bundle model but adds tuning to the
+% parameter a.
 %
-% [Xdet, Xsto, Fext] = hbtoymodel(Fc,k,noiselevel,Fextmax,fr,tvec)
+% [Xdet, Xsto, Fext] = hbtoymodeltuned(Fc,kzero,knoise,noiselevel,Fextmax,fr,tvec)
 %
 % Xdet : deterministic result
 % Xsto : stochastic result
 %
 %  
 % tvec : tvec vector
-% Fc,k : control parameters
+% tauk : rate of tuning
+% Fc,kzero : starting control parameters
 % noiselevels : standard deviation of stochastic noise in x and y
 % fr : frequency of oscillation on the unstable side of the bifurcation
 % Fextmax : amplitude in force of sinusoidal stimulation.
@@ -27,18 +29,12 @@ function [Xdet, Xsto,Podet] = nadrowskimodel(S,fmax,noiselevel,tvec)
 %EM Euler-Maruyama method
 %Ito integral
 
-xzero = 0.1;xazero=-0.05; 
-czero = 0;
-
-% Initial conditions
-ghb = 0.28e-6;
-ga = 10e-6;
-kgs = 1e-3;
-D = 40e-9;
-ksp = 0.6e-3;
-kes = 0.25e-3;
-A = 1;
-xes = 8e-9;
+a = 3.5;
+%b > 1 has unbounded solutions
+b = 0.5;
+tau = 10;
+xzero = 1; 
+fzero = 0;czero=0.4;
 
 %Decrease tvec step size by factor of Dtfac to ensure convergence
 Dtfac = 10^2;
@@ -49,52 +45,54 @@ N = round(tvec(end)/Dt);
 %Set the default random number stream
 RandStream.setGlobalStream(RandStream('mt19937ar','seed',1))
 xdW = sqrt(Dt)*randn(1,N); % White noise increments
-xadW = sqrt(Dt)*randn(1,N); % White noise increments
 fdW = sqrt(Dt)*randn(1,N); % White noise increments
+kdW = sqrt(Dt)*randn(1,N); % White noise increments
 
 xdet = zeros(1,N);
-cdet = zeros(1,N);
+fdet = zeros(1,N);
 xsto = zeros(1,N);
-csto = zeros(1,N);
+fsto = zeros(1,N);
+kdet = zeros(1,N);
+ksto = zeros(1,N);
 
 xdet(1) = xzero;
-xadet(1) = xazero;
 xsto(1) = xzero;
-xasto(1) = xzero;
-Podet(1) = xzero;
-Posto(1) = xzero;
+
+fdet(1) = fzero;
+fsto(1) = fzero;
 
 cdet(1) = czero;
 csto(1) = czero;
 
+
+
 %Not using FD theorem
-xNoiseSTD = noiselevel; xaNoiseSTD = noiselevel; cNoiseSTD = noiselevel; % equal noise levels
+xNoiseSTD = noiselevel; fNoiseSTD = noiselevel; kNoiseSTD = noiselevel; % equal noise levels
 
 Ftvec = linspace(tvec(1),tvec(end),N);
-Fext = 0*cos(2*pi*1*Ftvec);
+Fext = Fextmax*cos(2*pi*fr*Ftvec);
 
 for j = 2:N
 %Deterministic integral
-xdet(j) = xdet(j-1) + Dt*( -kgs/ghb*(xdet(j-1) - xadet(j-1) - D*Podet(j-1)) - ksp/ghb*xdet(j-1) + 1/ghb*Fext(j) );
-xadet(j) = xadet(j-1) + Dt*( -kgs/ga*(xdet(j-1) - xadet(j-1) - D*Podet(j-1)) - kes/ga*(xadet(j-1) - xes) - fmax/ga*(1-S*Podet(j-1)) );
-Podet(j) = Podet(j-1) + Dt*( (1 + A*exp((-xdet(j-1)-xadet(j-1))/4.11e-21))^-1 );
+xdet(j) = xdet(j-1) + Dt*(-kc*xdet(j-1) + a*(xdet(j-1)-fdet(j-1)*(1-S*cdet(j-1))) - (xdet(j-1)-fdet(j-1)*(1-S*cdet(j-1)))^3 + Fc + Fext(j));
+fdet(j) = fdet(j-1) + Dt*(b*xdet(j-1) - fdet(j-1))/tau;
+cdet(j) = cdet(j-1) + Dt*(cdet(j-1)/tauc*xdet(j-1)^2/delta^2 - cdet(j-1)/tauc);
 
 %Stochastic integral
-xsto(j) = xsto(j-1) + Dt*( -kgs/ghb*(xsto(j-1) - xasto(j-1) - D*Posto(j-1)) - ksp/ghb*xsto(j-1) + 1/ghb*Fext(j) ) + xNoiseSTD*xdW(j);
-xasto(j) = xasto(j-1) + Dt*( -kgs/ghb*(xsto(j-1) - xasto(j-1) - D*Posto(j-1)) - kes/ghb*(xasto(j-1) - xes) - fmax/ga*(1-S*Posto(j-1)) ) + xaNoiseSTD*xadW(j);
-Posto(j) = Posto(j-1) + Dt*( (1 + A*exp((-xsto(j-1)-xasto(j-1))/4.11e-21))^-1 );
-
+xsto(j) = xsto(j-1) + Dt*(-kc*xsto(j-1) + a*(xsto(j-1)-fsto(j-1)*(1-S*csto(j-1))) - (xsto(j-1)-fsto(j-1)*(1-S*csto(j-1)))^3 + Fc + Fext(j)) + xNoiseSTD*xdW(j);
+fsto(j) = fsto(j-1) + Dt*(b*xsto(j-1) - fsto(j-1))/tau + fNoiseSTD*fdW(j)/tau;
+csto(j) = csto(j-1) + Dt*(-csto(j-1)/tauc*xsto(j-1)^2/delta^2-csto(j-1)/tauc) - kNoiseSTD*kdW(j)/tauc;
 end
 
 Xdet = zeros(2,length(tvec)-1);
 Xsto = zeros(2,length(tvec)-1);
 
-
 %Return vectors at tvecs specified by tvec.
 Xdet(1,:) = xdet(1:Dtfac:N);
-Xdet(2,:) = xadet(1:Dtfac:N);
+Xdet(2,:) = fdet(1:Dtfac:N);
 Xsto(1,:) = xsto(1:Dtfac:N);
-Xsto(2,:) = xasto(1:Dtfac:N);
+Xsto(2,:) = fsto(1:Dtfac:N);
+Fext2(1,:) = Fext(1:Dtfac:N);
 
 plotyn = 1;
 if plotyn == 1
@@ -106,9 +104,9 @@ xlabel('tvec','FontSize',24)
 ylabel('x','FontSize',24,'Rotation',0,'HorizontalAlignment','right')
 
 figure
-plot(Ftvec(1:end),xasto,'g');
+plot(Ftvec(1:end),fsto,'g');
 hold on
-plot(Ftvec(1:end),xdet,'k');
+plot(Ftvec(1:end),fdet,'k');
 xlabel('tvec','FontSize',24) 
 ylabel('f','FontSize',24,'Rotation',0,'HorizontalAlignment','right')
 end

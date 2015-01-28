@@ -46,26 +46,18 @@ ydet = zeros(1,N); ydet(1) = yzero;
 % Scale the signal
 xmax = max(abs(Xin2));
 if xmax ~=0
-    Xin2 = 0.05*Xin2./xmax;
+    Xin2 = 1e-8.*(Xin2./xmax);
 end
 
 % Euler-Murayama Method with Ito Integration
 for j = 2:N
-
-    xdet(j) = xdet(j-1) + Dt*(mu*xdet(j-1) - 2*pi*fosc*ydet(j-1) - xdet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) + real(Xin2(j)));
-    ydet(j) = ydet(j-1) + Dt*(2*pi*fosc*xdet(j-1) + mu*ydet(j-1) - ydet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) + imag(Xin2(j)));
+    
+    xdet(j) = xdet(j-1) + Dt*(mu*xdet(j-1) - 2*pi*fosc*ydet(j-1) - xdet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) + (Xin2(j)));
+    ydet(j) = ydet(j-1) + Dt*(2*pi*fosc*xdet(j-1) + mu*ydet(j-1) - ydet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) + (Xin2(j)));
     
 end
 
-% Rescale the outputs
-xmaxo = max(abs(xdet));
-ymaxo = max(abs(ydet));
-if xmaxo ~=0
-    xdet = xdet./xmaxo;
-end
-if ymaxo ~=0
-    ydet = ydet./ymaxo;
-end
+
 
 %Return vectors at times specified by Time.
 Xout(1,:) = xdet(1:Dtfac:end);
