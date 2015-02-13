@@ -1,4 +1,4 @@
-function [Xout, Xin3] = hopfforced(mu,fosc,Xin,Fs)
+function [Xout, Xin3] = vdpforced(mu,fosc,Xin,Fs)
 %
 % This function simulates the normal form of the supercritical Hopf
 % bifurcation, given by two planar equations:
@@ -32,7 +32,7 @@ xzero = 0;yzero=0;
 tvec = linspace(0,length(Xin)/Fs-1/Fs,length(Xin));
 
 % Decrease time step size by factor of Dtfac to ensure convergence
-Dtfac = 10^1;
+Dtfac = 10^2;
 Dt = (tvec(2)-tvec(1))/Dtfac;
 
 Xin2 = interp(Xin,round(1/Dt));
@@ -52,8 +52,8 @@ end
 % Euler-Murayama Method with Ito Integration
 for j = 2:N
     
-    xdet(j) = xdet(j-1) + Dt*(mu*xdet(j-1) - mu*1/3*xdet(j-1)^3 - mu*ydet(j-1) + (Xin2(j)))
-    ydet(j) = ydet(j-1) + Dt*( + (Xin2(j)));
+    xdet(j) = xdet(j-1) + Dt*(mu*xdet(j-1) - mu*1/3*xdet(j-1)^3 - mu*ydet(j-1) - (Xin2(j)));
+    ydet(j) = ydet(j-1) + Dt*(1/mu*xdet(j-1) - (Xin2(j)));
     
 end
 

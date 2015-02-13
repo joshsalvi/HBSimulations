@@ -35,7 +35,7 @@ xzero = 1;
 fzero = 0;
 
 %Decrease tvec step size by factor of Dtfac to ensure convergence
-Dtfac = 10^2;
+Dtfac = 10^0;
 Dt = (tvec(2)-tvec(1))/Dtfac;
 
 N = round(tvec(end)/Dt);
