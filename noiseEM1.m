@@ -1,10 +1,10 @@
-function [Xdet, Xsto, Fext] = hopfstochoffset(mu,fosc,Co,xNoiseSTD,yNoiseSTD,tvec)
+function [Xdet, Xsto, Fext] = noiseEM1(mu,fosc,xNoiseSTD,yNoiseSTD,tvec)
 %
 % This function simulates the normal form of the supercritical Hopf
 % bifurcation, given by two planar equations:
 %
-% x_dot = mu*x - omega*y - x*(x^2 + y^2) + C
-% y_dot = omega*x + mu*y - y*(x^2 + y^2) + C
+% x_dot = mu*x - omega*y - x*(x^2 + y^2)
+% y_dot = omega*x + mu*y - y*(x^2 + y^2)
 %
 % where mu is the control parameter. For mu>0, the system will oscillate at
 % an amplitude that grows with sqrt(mu). Alternatively, one may express the
@@ -16,7 +16,7 @@ function [Xdet, Xsto, Fext] = hopfstochoffset(mu,fosc,Co,xNoiseSTD,yNoiseSTD,tve
 % Here we simulate both the deterministic and stochastic cases for the
 % supercritical Hopf bifurcation 
 %
-% [Xdet Xsto] = hopfstoch(mu,fosc,C,xNoiseSTD,yNoiseSTD,tvec)
+% [Xdet Xsto] = hopfstoch(mu,fosc,xNoiseSTD,yNoiseSTD,tvec)
 %
 % Xdet : deterministic result
 % Xsto : stochastic result
@@ -27,7 +27,6 @@ function [Xdet, Xsto, Fext] = hopfstochoffset(mu,fosc,Co,xNoiseSTD,yNoiseSTD,tve
 % xNoiseSTD : standard deviation of stochastic noise in x
 % yNoiseSTD : standard deviation of stochastic noise in y
 % fosc : frequency of oscillation on the unstable side of the bifurcation
-% C : offset
 %
 % By modifying the code, you can also add a step function or external
 % forcing. 
@@ -36,8 +35,8 @@ function [Xdet, Xsto, Fext] = hopfstochoffset(mu,fosc,Co,xNoiseSTD,yNoiseSTD,tve
 %
 
 % Initial condition
-xzero = 1;
-yzero = -1;
+xzero = 0;
+yzero = 0;
 
 % Add external forcing if desired
 sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
@@ -76,13 +75,13 @@ end
 
 % Euler-Murayama Method with Ito Integration
 for j = 2:N
-%Deterministic integral
-xdet(j) = xdet(j-1) + Dt*(mu*xdet(j-1) - 2*pi*fosc*ydet(j-1) - xdet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) + real(Fext(j)) + Co);
-ydet(j) = ydet(j-1) + Dt*(2*pi*fosc*xdet(j-1) + mu*ydet(j-1) - ydet(j-1)*(xdet(j-1)^2 + ydet(j-1)^2) + imag(Fext(j)) + Co);
+%Stochastic integral: uncoupled
+xdet(j) = xdet(j-1) + xNoiseSTD*xdW(j);
+ydet(j) = ydet(j-1) + yNoiseSTD*ydW(j);
 
-%Stochastic integral
-xsto(j) = xsto(j-1) + Dt*(mu*xsto(j-1) - 2*pi*fosc*ysto(j-1) - xsto(j-1)*(xsto(j-1)^2 + ysto(j-1)^2) + real(Fext(j)) + Co) + xNoiseSTD*xdW(j);
-ysto(j) = ysto(j-1) + Dt*(2*pi*fosc*xsto(j-1) + mu*ysto(j-1) - ysto(j-1)*(xsto(j-1)^2 + ysto(j-1)^2) + imag(Fext(j)) + Co) + yNoiseSTD*ydW(j);
+%Stochastic integral: coupled
+xsto(j) = xsto(j-1) + Dt*(ysto(j-1)) + xNoiseSTD*xdW(j);
+ysto(j) = ysto(j-1) + Dt*(xsto(j-1)) + yNoiseSTD*ydW(j);
 
 end
 
@@ -97,12 +96,11 @@ Xsto(1,:) = xsto(1:Dtfac:N);
 Xsto(2,:) = ysto(1:Dtfac:N);
 
 % Make a plot of the data?
-plotyn=1;
+plotyn=0;
 
 if plotyn==1
     figure;
-    clear i
-    subplot(1,2,1);hold on;plot(tvec(2:end),Xsto(1,:)+i*Xsto(2,:),'r');plot(tvec(2:end),Xdet(1,:),'k');title('Black=deterministic; Red=stochastic; real part only');
+    subplot(1,2,1);hold on;plot(tvec(2:end),Xsto(1,:),'r');plot(tvec(2:end),Xdet(1,:),'k');title('Black=deterministic; Red=stochastic; real part only');
     subplot(1,2,2);hold on;plot(Xsto(1,:),Xsto(2,:),'r');plot(Xdet(1,:),Xdet(2,:),'k');title('Black=deterministic; Red=stochastic');
 end
 

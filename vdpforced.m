@@ -32,7 +32,7 @@ xzero = 0;yzero=0;
 tvec = linspace(0,length(Xin)/Fs-1/Fs,length(Xin));
 
 % Decrease time step size by factor of Dtfac to ensure convergence
-Dtfac = 10^2;
+Dtfac = 30^2;
 Dt = (tvec(2)-tvec(1))/Dtfac;
 
 Xin2 = interp(Xin,round(1/Dt));
