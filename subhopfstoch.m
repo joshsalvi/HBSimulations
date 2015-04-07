@@ -1,4 +1,4 @@
-function [Xdet, Xsto, Fext] = subhopfstoch(mu,omega,xNoiseSTD,yNoiseSTD,tvec)
+function [Xdet, Xsto, Fext] = subhopfstoch(mu,omega,xNoiseSTD,yNoiseSTD,Fextmax,fr,tvec)
 %
 % This function simulates the normal form of the subcritical Hopf
 % bifurcation, given by two polar equations:
@@ -12,7 +12,7 @@ function [Xdet, Xsto, Fext] = subhopfstoch(mu,omega,xNoiseSTD,yNoiseSTD,tvec)
 % Here we simulate both the deterministic and stochastic cases for the
 % subcritical Hopf bifurcation.
 %
-% [Xdet Xsto] = hopfstoch(mu,omega,xNoiseSTD,yNoiseSTD,tvec)
+% [Xdet, Xsto, Fext] = subhopfstoch(mu,omega,xNoiseSTD,yNoiseSTD,Fextmax,fr,tvec)
 %
 % Xdet : deterministic result
 % Xsto : stochastic result
@@ -35,11 +35,12 @@ xzero = -1e-14;
 yzero = 1e-14;
 
 % Add external forcing if desired
-sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
-Fextmax = 0;        % amplitude of sinusoidal stim OR pulse
-fr = 5;             % frequency of stimulation
+sinusoidalstim = 1; pulsestim = 0;  % pulse or sinusoid?
+%Fextmax = 0;        % amplitude of sinusoidal stim OR pulse
+%fr = 5;             % frequency of stimulation
 pulsestart = 500;     % start of pulse
 pulseend = 500.01;       % end of pulse
+fr=fr/(2*pi);
 
 % Decrease time step size by factor of Dtfac to ensure convergence
 Dtfac = 10^2;
@@ -94,6 +95,7 @@ Xdet(1,:) = xdet(1:Dtfac:N);
 Xdet(2,:) = ydet(1:Dtfac:N);
 Xsto(1,:) = xsto(1:Dtfac:N);
 Xsto(2,:) = ysto(1:Dtfac:N);
+Fext = Fext(1:Dtfac:N);
 
 % Make a plot of the data?
 plotyn=1;

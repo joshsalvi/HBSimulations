@@ -13,7 +13,7 @@ Time = 0:1:t_range;
 
 TIME = Time;
 
-lin = 0;
+lin = 1;
 if lin == 1
 %Sinusoidal function
 TestT = 10;%period length for sinusoidal function
@@ -42,8 +42,12 @@ xlabel('Time','FontSize',24); ylabel('x','FontSize',24);
 %savefile = '/Users/dmelody/Work/Ear/Hair Bundle Expts/Data/April13/Sigs';
 %save([savefile,'.mat'], 'Sig', 'DetSig', 'Time');
 
+
+
+
 end
 function dx = system(t,x)
+
 
 global FEXTMAX;
 global FR;
@@ -67,4 +71,5 @@ k = ksp + ke;
  dx(1) = (-k*x(1) + a*(x(1)-x(2)) - (x(1)-x(2))^3 + Fc + Fext)/gamma;
  dx(2) = (b*x(1) - x(2))/tau;
  
+end
 end

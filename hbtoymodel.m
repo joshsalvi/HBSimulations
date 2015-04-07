@@ -27,15 +27,16 @@ function [Xdet, Xsto, Fext2] = hbtoymodel(Fc,k,noiselevel,Fextmax,fr,tvec)
 %EM Euler-Maruyama method
 %Ito integral
 
-a = 3.5;
+a = 5;
 %b > 1 has unbounded solutions
 b = 0.5;
 tau = 10;
 xzero = 1; 
 fzero = 0;
+x0=0;
 
 %Decrease tvec step size by factor of Dtfac to ensure convergence
-Dtfac = 10^0;
+Dtfac = 10^2;
 Dt = (tvec(2)-tvec(1))/Dtfac;
 
 N = round(tvec(end)/Dt);
@@ -64,11 +65,11 @@ Fext = Fextmax*cos(2*pi*fr*Ftvec);
 
 for j = 2:N
 %Deterministic integral
-xdet(j) = xdet(j-1) + Dt*(-k*xdet(j-1) + a*(xdet(j-1)-fdet(j-1)) - (xdet(j-1)-fdet(j-1))^3 + Fc + Fext(j));
+xdet(j) = xdet(j-1) + Dt*(-k*(xdet(j-1)-x0) + a*(xdet(j-1)-fdet(j-1)) - (xdet(j-1)-fdet(j-1))^3 + Fc + Fext(j));
 fdet(j) = fdet(j-1) + Dt*(b*xdet(j-1) - fdet(j-1))/tau;
 
 %Stochastic integral
-xsto(j) = xsto(j-1) + Dt*(-k*xsto(j-1) + a*(xsto(j-1)-fsto(j-1)) - (xsto(j-1)-fsto(j-1))^3 + Fc + Fext(j)) + xNoiseSTD*xdW(j);
+xsto(j) = xsto(j-1) + Dt*(-k*(xsto(j-1)-x0) + a*(xsto(j-1)-fsto(j-1)) - (xsto(j-1)-fsto(j-1))^3 + Fc + Fext(j)) + xNoiseSTD*xdW(j);
 fsto(j) = fsto(j-1) + Dt*(b*xsto(j-1) - fsto(j-1))/tau + fNoiseSTD*fdW(j)/tau;
 end
 
@@ -84,19 +85,24 @@ Fext2(1,:) = Fext(1:Dtfac:N);
 
 plotyn = 0;
 if plotyn == 1
+  close all
 figure
 plot(Ftvec(1:end),xsto,'r');
 hold on
 plot(Ftvec(1:end),xdet,'k');
 xlabel('tvec','FontSize',24) 
 ylabel('x','FontSize',24,'Rotation',0,'HorizontalAlignment','right')
-
+    %}
+%{
 figure
 plot(Ftvec(1:end),fsto,'g');
 hold on
 plot(Ftvec(1:end),fdet,'k');
 xlabel('tvec','FontSize',24) 
 ylabel('f','FontSize',24,'Rotation',0,'HorizontalAlignment','right')
+%}
+    figure
+    plot(xsto,fsto,'k');xlabel('xsto');ylabel('fsto');
 end
 
 end

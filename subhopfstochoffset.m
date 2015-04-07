@@ -1,4 +1,4 @@
-function [Xdet, Xsto, Fext] = subhopfstochoffset(mu,omega,Co,xNoiseSTD,yNoiseSTD,tvec)
+function [Xdet, Xsto, Fext] = subhopfstochoffset(mu,omega,Co,xNoiseSTD,yNoiseSTD,Fextmax,fr,tvec)
 %
 % This function simulates the normal form of the subcritical Hopf
 % bifurcation with an offset, given by two polar equations:
@@ -37,9 +37,9 @@ yzero = 1e-2;
 fosc=omega;
 
 % Add external forcing if desired
-sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
-Fextmax = 0;        % amplitude of sinusoidal stim OR pulse
-fr = 5;             % frequency of stimulation
+sinusoidalstim = 1; pulsestim = 0;  % pulse or sinusoid?
+%Fextmax = 0;        % amplitude of sinusoidal stim OR pulse
+%fr = 5;             % frequency of stimulation
 pulsestart = 500;     % start of pulse
 pulseend = 500.01;       % end of pulse
 
@@ -96,6 +96,7 @@ Xdet(1,:) = xdet(1:Dtfac:N);
 Xdet(2,:) = ydet(1:Dtfac:N);
 Xsto(1,:) = xsto(1:Dtfac:N);
 Xsto(2,:) = ysto(1:Dtfac:N);
+Fext = Fext(1:Dtfac:N);
 
 % Make a plot of the data?
 plotyn=0;
