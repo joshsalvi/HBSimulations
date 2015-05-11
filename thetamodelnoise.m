@@ -1,4 +1,4 @@
-function [Xdet, Xsto, Fext] = thetamodel(I,thetaNoiseSTD,tvec)
+function [Xdet, Xsto, Fext,rsto] = thetamodelnoise(I,thetaNoiseSTD,tvec)
 %
 % This function simulates the Ermentrout-Kopell canonical model, also known
 % as the theta model. This is a one-dimensional model of neuron spiking,
@@ -14,10 +14,10 @@ function [Xdet, Xsto, Fext] = thetamodel(I,thetaNoiseSTD,tvec)
 % Here we simulate both the deterministic and stochastic cases for the
 % theta model. 
 %
-% [Xdet, Xsto, Fext] = thetamodel(I,thetaNoiseSTD,tvec)
+% [thetadet, thetasto, Fext] = thetamodel(I,thetaNoiseSTD,tvec)
 %
-% Xdet : deterministic result
-% Xsto : stochastic result
+% thetadet : deterministic result
+% thetasto : stochastic result
 % thetadet : deterministic angle
 % thetasto : stochastic angle
 % 
@@ -49,10 +49,16 @@ N = tvec(end)/Dt;
 
 %Set the default random number stream
 RandStream.setGlobalStream(RandStream('mt19937ar','seed',1))
-dW = sqrt(Dt)*randn(1,N); % White noise increments
+tdW = sqrt(Dt)*randn(1,N); % White noise increments
+rdW = sqrt(Dt)*randn(1,N); % White noise increments
+tNoiseSTD = thetaNoiseSTD;
+rNoiseSTD = thetaNoiseSTD;
 
-xdet = zeros(1,N); xdet(1) = thetazero;
-xsto = zeros(1,N); xsto(1) = thetazero;
+
+thetadet = zeros(1,N); thetadet(1) = thetazero;
+thetasto = zeros(1,N); thetasto(1) = thetazero;
+rdet = zeros(1,N); rdet(1) = 1;
+rsto = zeros(1,N); rsto(1) = 1;
 
 % External forcing
 if sinusoidalstim == 1
@@ -68,38 +74,44 @@ end
 % Euler-Murayama Method with Ito Integration
 for j = 2:N
 %Deterministic integral
-xdet(j) = xdet(j-1) + Dt*(1 - cos(xdet(j-1)) + (1 + cos(xdet(j-1)))*I + Fext(j));
+thetadet(j) = thetadet(j-1) + Dt*(1 - cos(thetadet(j-1)) + (1 + cos(thetadet(j-1)))*I + Fext(j));
+rdet(j) = rdet(j-1);
 
 %Stochastic integral
-%xsto(j) = xsto(j-1) + Dt*(1 - cos(xsto(j-1)) + (1 + cos(xsto(j-1)))*I + Fext(j)) + thetaNoiseSTD*dW(j);
-xsto(j) = xsto(j-1) + Dt*(1 - cos(xsto(j-1)) + (1 + cos(xsto(j-1)))*(I - thetaNoiseSTD^2/2*sin(xsto(j-1))) + Fext(j)) + thetaNoiseSTD*(1 + cos(xsto(j-1)))*dW(j);
+%thetasto(j) = thetasto(j-1) + Dt*(1 - cos(thetasto(j-1)) + (1 + cos(thetasto(j-1)))*I + Fext(j)) + thetaNoiseSTD*dW(j);
+thetasto(j) = thetasto(j-1) + Dt*(1 - cos(thetasto(j-1)) + (1 + cos(thetasto(j-1)))*(I - thetaNoiseSTD^2/2*sin(thetasto(j-1))) + Fext(j)) + thetaNoiseSTD*(1 + cos(thetasto(j-1)))*tdW(j);
+rsto(j) = rsto(j-1) + 0.1*rNoiseSTD*rdW(j);
 
 end
 
 
-thetadet = zeros(1,length(tvec)-1);
-thetasto = zeros(1,length(tvec)-1);
+thetadet1 = zeros(1,length(tvec)-1);
+thetasto1 = zeros(1,length(tvec)-1);
+rdet1 = zeros(1,length(tvec)-1);
+rsto1 = zeros(1,length(tvec)-1);
 
 %Return vectors at times specified by Time.
-thetadet(1,:) = xdet(1:Dtfac:N);
-thetasto(1,:) = xsto(1:Dtfac:N);
+thetadet1(1,:) = thetadet(1:Dtfac:N);
+rdet1(1,:) = rdet(1:Dtfac:N);
+thetasto1(1,:) = thetasto(1:Dtfac:N);
+rsto1(1,:) = rsto(1:Dtfac:N);
 Fext = Fext(1:Dtfac:N);
 
 % Convert these values into time traces (theta is the angle around a unit
 % circle). Use thetadet and thetasto to find the phase plane of the signal
 % if you so desire
-Xdet = -sin(thetadet);
-Xsto = -sin(thetasto);
+Xdet = rdet1.*cos(thetadet1);
+Xsto = rsto1.*cos(thetasto1);
 Xdet=Xdet-mean(Xdet);
 Xsto=Xsto-mean(Xsto);
 
 % Make a plot of the data?
-plotyn=1;
+plotyn=0;
 
 if plotyn==1
     figure;
     subplot(1,2,1);hold on;plot(tvec(2:end),Xsto,'r');plot(tvec(2:end),Xdet,'k');title('Black=deterministic; Red=stochastic');
-    subplot(1,2,2);hold on;plot(exp(-1i*thetasto),'r');plot(exp(-1i*thetadet),'k');title('Black=deterministic; Red=stochastic');
+    subplot(1,2,2);hold on;plot(Xsto,imag(hilbert(Xsto)),'r');plot(Xdet,imag(hilbert(Xdet)),'k');title('Black=deterministic; Red=stochastic');
     %figure;
     %plot(tvec(1:length(Fext)),Fext);
 end
