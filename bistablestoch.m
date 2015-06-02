@@ -83,7 +83,7 @@ Xdet(1,:) = xdet(1:Dtfac:N);
 Xsto(1,:) = xsto(1:Dtfac:N);
 
 % Make a plot of the data?
-plotyn=1;
+plotyn=0;
 
 if plotyn==1
     figure;
