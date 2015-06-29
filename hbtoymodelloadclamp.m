@@ -74,7 +74,9 @@ fsto(1) = fzero;
 xNoiseSTD = noiselevel; fNoiseSTD = noiselevel; % equal noise levels
 
 Ftvec = linspace(tvec(1),tvec(end),N);
-Fext = Fextmax*cos(2*pi*fr*Ftvec);
+%Fext = Fextmax*cos(2*pi*fr*Ftvec);
+Fext = Fextmax*sawtooth(2*pi*fr*Ftvec);
+%Fext = Ftvec.*Fextmax;
 
 for j = 2:N
     

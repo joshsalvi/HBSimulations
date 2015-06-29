@@ -68,7 +68,8 @@ ysto = zeros(1,N); ysto(1) = yzero;
 % External forcing
 if sinusoidalstim == 1
     Ftime = linspace(tvec(1),tvec(end),N);
-    Fext = Fextmax*sin(2*pi*fr*Ftime);
+    %Fext = Fextmax*sin(2*pi*fr*Ftime);
+    Fext = Fextmax*sawtooth(2*pi*fr*Ftime);
 elseif pulsestim == 1
     Ftime = linspace(tvec(1),tvec(end),N);
     Fext = ((Ftime<pulseend)-(Ftime<pulsestart))*Fextmax;

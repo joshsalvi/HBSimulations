@@ -27,11 +27,11 @@ function [Xdet, Xsto, Fext2] = hbtoymodel(Fc,k,noiselevel,Fextmax,fr,tvec)
 %EM Euler-Maruyama method
 %Ito integral
 
-a = 5;
+a = 3.5;
 %b > 1 has unbounded solutions
 b = 0.5;
 tau = 10;
-xzero = 1; 
+xzero = 0.01; 
 fzero = 0;
 x0=0;
 
@@ -61,7 +61,9 @@ fsto(1) = fzero;
 xNoiseSTD = noiselevel; fNoiseSTD = noiselevel; % equal noise levels
 
 Ftvec = linspace(tvec(1),tvec(end),N);
-Fext = Fextmax*cos(2*pi*fr*Ftvec);
+%Fext = Fextmax*cos(2*pi*fr*Ftvec);
+Fext = abs(Fextmax*sawtooth(2*pi*fr*Ftvec)) - mean(abs(Fextmax*sawtooth(2*pi*fr*Ftvec)));
+%Fext = Fextmax.*Ftvec;
 
 for j = 2:N
 %Deterministic integral

@@ -1,4 +1,4 @@
-function [Xout, Xin3] = vdpforced(mu,fosc,Xin,Fs)
+function [Xout, Xin3] = vdpforced(mu,fosc,Xin,tvec)
 %
 % This function simulates the normal form of the supercritical Hopf
 % bifurcation, given by two planar equations:
@@ -29,10 +29,12 @@ function [Xout, Xin3] = vdpforced(mu,fosc,Xin,Fs)
 
 % Initial conditions and time vector
 xzero = 0;yzero=0;
-tvec = linspace(0,length(Xin)/Fs-1/Fs,length(Xin));
+Fs=1/tvec(2);
+dt=1/Fs;
+%tvec = 0:dt:length(Xin)*dt-dt;
 
 % Decrease time step size by factor of Dtfac to ensure convergence
-Dtfac = 30^2;
+Dtfac = 100^1;
 Dt = (tvec(2)-tvec(1))/Dtfac;
 
 Xin2 = interp(Xin,round(1/Dt));
