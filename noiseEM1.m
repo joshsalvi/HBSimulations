@@ -35,8 +35,8 @@ function [Xdet, Xsto, Fext] = noiseEM1(mu,fosc,xNoiseSTD,yNoiseSTD,tvec)
 %
 
 % Initial condition
-xzero = 0;
-yzero = 0;
+xzero = 1;
+yzero = -1;
 
 % Add external forcing if desired
 sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
