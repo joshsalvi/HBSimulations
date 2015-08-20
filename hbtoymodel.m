@@ -59,21 +59,26 @@ fsto(1) = fzero;
 
 %Not using FD theorem
 xNoiseSTD = noiselevel; fNoiseSTD = noiselevel; % equal noise levels
-sinusoisalstim =0;
+sinusoisalstim = 0;
 Ftvec = linspace(tvec(1),tvec(end),N);
 Fext = zeros(1,N);
 if sinusoisalstim == 1
-%Fext = Fextmax*cos(2*pi*fr*Ftvec);
-Fext = abs(Fextmax*sawtooth(2*pi*fr*Ftvec)) - mean(abs(Fextmax*sawtooth(2*pi*fr*Ftvec)));
+Fext = Fextmax*cos(2*pi*fr*Ftvec);
+%Fext = abs(Fextmax*sawtooth(2*pi*fr*Ftvec)) - mean(abs(Fextmax*sawtooth(2*pi*fr*Ftvec)));
 %Fext = Fextmax.*Ftvec;
 end
-pulsestim = 1;
+pulsestim = 0;
 % for a pulse stimulus, fr should be [t1 t2], in which:
 % t1: starting time of pulse
 % t2: ending time of pulse
 if pulsestim==1
     t1n = findnearest(Ftvec,fr(1));t2n = findnearest(Ftvec,fr(2));t1n=t1n(1);t2n=t2n(1);
     Fext(t1n:t2n) = Fextmax;
+end
+
+whitenoise = 0;
+if whitenoise==1;
+    Fext = Fextmax.*randn(1,length(Ftvec));
 end
 
 

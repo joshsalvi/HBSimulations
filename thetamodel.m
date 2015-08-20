@@ -35,9 +35,9 @@ function [Xdet, Xsto, Fext] = thetamodel(I,thetaNoiseSTD,tvec)
 thetazero = 1;
 
 % Add external forcing if desired
-sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
-Fextmax = 0;        % amplitude of sinusoidal stim OR pulse
-fr = 5;             % frequency of stimulation
+sinusoidalstim = 1; pulsestim = 0;  % pulse or sinusoid?
+Fextmax = 0.8;        % amplitude of sinusoidal stim OR pulse
+fr = 0.1;             % frequency of stimulation
 pulsestart = 400;     % start of pulse
 pulseend = 410;       % end of pulse
 

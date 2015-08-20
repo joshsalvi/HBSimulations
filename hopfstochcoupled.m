@@ -1,4 +1,4 @@
-function [X1det, X1sto, X2det, X2sto, Fext] = hopfstochcoupled(mu1,mu2,fosc1,fosc2,K,noiselevel,tvec)
+function [X1det, X1sto, X2det, X2sto, Fext] = hopfstochcoupled(mu1,mu2,fosc1,fosc2,K,noiselevel,Fextmax,fr,tvec)
 %
 % This function simulates the normal form of the supercritical Hopf
 % bifurcation, given by two planar equations:
@@ -44,9 +44,9 @@ x1zero = 0.1;x2zero = -0.1;
 y1zero = -0.1;y2zero = 0.1;
 
 % Add external forcing if desired
-sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
-Fextmax = 1;        % amplitude of sinusoidal stim OR pulse
-fr = 5;             % frequency of stimulation
+sinusoidalstim = 1; pulsestim = 0;  % pulse or sinusoid?
+%Fextmax = 1;        % amplitude of sinusoidal stim OR pulse
+%fr = 5;             % frequency of stimulation
 pulsestart = 1;     % start of pulse
 pulseend = 2;       % end of pulse
 
@@ -115,7 +115,7 @@ X2sto(1,:) = x2sto(1:Dtfac:N);
 X2sto(2,:) = y2sto(1:Dtfac:N);
 
 % Make a plot of the data?
-plotyn=1;
+plotyn=0;
 
 if plotyn==1
     figure;
