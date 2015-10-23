@@ -1,4 +1,4 @@
-function [Xdet, Xsto, Fext2] = hbtoymodel(Fc,k,noiselevel,Fextmax,fr,tvec)
+function [Xdet, Xsto, Fext2, NVec] = hbtoymodel(Fc,k,noiselevel,Fextmax,fr,tvec)
 %
 % This function simulates the hair-buyndle model from PNAS 2012.
 %
@@ -45,6 +45,7 @@ N = round(tvec(end)/Dt);
 RandStream.setGlobalStream(RandStream('mt19937ar','seed',1))
 xdW = sqrt(Dt)*randn(1,N); % White noise increments
 fdW = sqrt(Dt)*randn(1,N); % White noise increments
+ndW = sqrt(Dt)*randn(1,N); % white noise driving
 
 xdet = zeros(1,N);
 fdet = zeros(1,N);
@@ -83,13 +84,16 @@ end
 
 
 for j = 2:N
-%Deterministic integral
-xdet(j) = xdet(j-1) + Dt*(-k*(xdet(j-1)-x0) + a*(xdet(j-1)-fdet(j-1)) - (xdet(j-1)-fdet(j-1))^3 + Fc + Fext(j));
-fdet(j) = fdet(j-1) + Dt*(b*xdet(j-1) - fdet(j-1))/tau;
+    noiseampl=0.2;
+    noisevec(j) = ndW(j);
 
-%Stochastic integral
-xsto(j) = xsto(j-1) + Dt*(-k*(xsto(j-1)-x0) + a*(xsto(j-1)-fsto(j-1)) - (xsto(j-1)-fsto(j-1))^3 + Fc + Fext(j)) + xNoiseSTD*xdW(j);
-fsto(j) = fsto(j-1) + Dt*(b*xsto(j-1) - fsto(j-1))/tau + fNoiseSTD*fdW(j)/tau;
+    %Deterministic integral
+    xdet(j) = xdet(j-1) + Dt*(-k*(xdet(j-1)-x0) + a*(xdet(j-1)-fdet(j-1)) - (xdet(j-1)-fdet(j-1))^3 + Fc + Fext(j)) + noiseampl.*ndW(j);
+    fdet(j) = fdet(j-1) + Dt*(b*xdet(j-1) - fdet(j-1))/tau;
+
+    %Stochastic integral
+    xsto(j) = xsto(j-1) + Dt*(-k*(xsto(j-1)-x0) + a*(xsto(j-1)-fsto(j-1)) - (xsto(j-1)-fsto(j-1))^3 + Fc + Fext(j)) + xNoiseSTD*xdW(j) + noiseampl.*ndW(j);
+    fsto(j) = fsto(j-1) + Dt*(b*xsto(j-1) - fsto(j-1))/tau + fNoiseSTD*fdW(j)/tau;
 end
 
 Xdet = zeros(2,length(tvec)-1);
@@ -101,10 +105,11 @@ Xdet(2,:) = fdet(1:Dtfac:N);
 Xsto(1,:) = xsto(1:Dtfac:N);
 Xsto(2,:) = fsto(1:Dtfac:N);
 Fext2(1,:) = Fext(1:Dtfac:N);
+NVec(1,:) = noisevec(1:Dtfac:N);
 
 plotyn = 0;
 if plotyn == 1
-  close all
+ % close all
 figure
 plot(Ftvec(1:end),xsto,'r');
 hold on
@@ -120,8 +125,8 @@ plot(Ftvec(1:end),fdet,'k');
 xlabel('tvec','FontSize',24) 
 ylabel('f','FontSize',24,'Rotation',0,'HorizontalAlignment','right')
 %}
-    figure
-    plot(xsto,fsto,'k');xlabel('xsto');ylabel('fsto');
+   % figure
+   % plot(xsto,fsto,'k');xlabel('xsto');ylabel('fsto');
 end
 
 end

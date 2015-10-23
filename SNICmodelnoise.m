@@ -1,4 +1,4 @@
-function [Xdet, Xsto, Fext] = SNICmodelnoise(mu,NoiseSTD,tvec)
+function [Xdet, Xsto, Fext] = SNICmodelnoise(mu,NoiseSTD,tvec,fr,Fextmax)
 %
 % This function simulates the normal form of the SNIC bifurcation
 % in rectangular coordinates
@@ -31,11 +31,10 @@ xzero = 1;
 yzero = -1;
 
 % Add external forcing if desired
-sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
-Fextmax = 0;        % amplitude of sinusoidal stim OR pulse
-fr = 5;             % frequency of stimulation
-pulsestart = 400;     % start of pulse
-pulseend = 410;       % end of pulse
+sinusoidalstim = 0; pulsestim = 1;  % pulse or sinusoid?
+%Fextmax = 1;        % amplitude of sinusoidal stim OR pulse
+
+
 
 % Decrease time step size by factor of Dtfac to ensure convergence
 Dtfac = 10^2;
@@ -56,28 +55,33 @@ xsto = zeros(1,N); xsto(1) = xzero;
 ydet = zeros(1,N); ydet(1) = yzero;
 ysto = zeros(1,N); ysto(1) = yzero;
 
-% External forcing
+Ftvec = linspace(tvec(1),tvec(end),N);
+Fext = zeros(1,N);
 if sinusoidalstim == 1
-    Ftime = linspace(tvec(1),tvec(end),N);
-    Fext = Fextmax*cos(2*pi*fr*Ftime);
-elseif pulsestim == 1
-    Ftime = linspace(tvec(1),tvec(end),N);
-    Fext = ((Ftime<pulseend)-(Ftime<pulsestart))*Fextmax;
-else
-    Fext = zeros(1,N);
+Fext = Fextmax*cos(2*pi*fr*Ftvec);
+%Fext = abs(Fextmax*sawtooth(2*pi*fr*Ftvec)) - mean(abs(Fextmax*sawtooth(2*pi*fr*Ftvec)));
+%Fext = Fextmax.*Ftvec;
+end
+pulsestim = 0;
+% for a pulse stimulus, fr should be [t1 t2], in which:
+% t1: starting time of pulse
+% t2: ending time of pulse
+if pulsestim==1
+    t1n = findnearest(Ftvec,fr(1));t2n = findnearest(Ftvec,fr(2));t1n=t1n(1);t2n=t2n(1);
+    Fext(t1n:t2n) = Fextmax;
 end
 
 % Euler-Murayama Method with Ito Integration
 for j = 2:N
 %Deterministic integral
 rdet(j-1) = sqrt(xdet(j-1)^2+ydet(j-1)^2);
-xdet(j) = xdet(j-1) + Dt*( xdet(j-1)*(1 - rdet(j-1)^2) - ydet(j-1)*(1 - xdet(j-1)/rdet(j-1) + mu*(1 + xdet(j-1)/rdet(j-1)) ) );
+xdet(j) = xdet(j-1) + Dt*( xdet(j-1)*(1 - rdet(j-1)^2) - ydet(j-1)*(1 - xdet(j-1)/rdet(j-1) + mu*(1 + xdet(j-1)/rdet(j-1)) ) + Fext(j));
 ydet(j) = ydet(j-1) + Dt*( ydet(j-1)*(1 - rdet(j-1)^2) + xdet(j-1)*(1 - xdet(j-1)/rdet(j-1) + mu*(1 + xdet(j-1)/rdet(j-1)) ) );
 
 %Stochastic integral
 %thetasto(j) = thetasto(j-1) + Dt*(1 - cos(thetasto(j-1)) + (1 + cos(thetasto(j-1)))*I + Fext(j)) + thetaNoiseSTD*dW(j);
 rsto(j-1) = sqrt(xsto(j-1)^2+ysto(j-1)^2);
-xsto(j) = xsto(j-1) + Dt*( xsto(j-1)*(1 - rsto(j-1)^2) - ysto(j-1)*(1 - xsto(j-1)/rsto(j-1) + mu*(1 + xsto(j-1)/rsto(j-1)) ) ) + xNoiseSTD*xdW(j);
+xsto(j) = xsto(j-1) + Dt*( xsto(j-1)*(1 - rsto(j-1)^2) - ysto(j-1)*(1 - xsto(j-1)/rsto(j-1) + mu*(1 + xsto(j-1)/rsto(j-1)) ) + Fext(j)) + xNoiseSTD*xdW(j);
 ysto(j) = ysto(j-1) + Dt*( ysto(j-1)*(1 - rsto(j-1)^2) + xsto(j-1)*(1 - xsto(j-1)/rsto(j-1) + mu*(1 + xsto(j-1)/rsto(j-1)) ) ) + yNoiseSTD*ydW(j);
 
 end
@@ -95,7 +99,7 @@ Fext = Fext(1:Dtfac:N);
 
 
 % Make a plot of the data?
-plotyn=0;
+plotyn=1;
 
 if plotyn==1
     figure;

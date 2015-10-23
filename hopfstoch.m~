@@ -20,7 +20,7 @@ function [Xdet, Xsto, Fext] = hopfstoch(mu,fosc,NoiseSTD,tvec,Fextmax,fr)
 %
 % Xdet : deterministic result
 % Xsto : stochastic result
-%
+
 %  
 % tvec : time vector
 % mu : control parameter

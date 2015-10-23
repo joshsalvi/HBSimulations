@@ -99,7 +99,7 @@ Xsto(2,:) = ysto(1:Dtfac:N);
 Fext = Fext(1:Dtfac:N);
 
 % Make a plot of the data? 
-plotyn=0;
+plotyn=1;
 
 if plotyn==1
     figure;
