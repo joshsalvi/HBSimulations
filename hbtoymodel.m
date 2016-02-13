@@ -32,7 +32,9 @@ a = 3.5;
 b = 0.5;
 tau = 10;
 xzero = 0.01; 
-fzero = 0;
+% xzero=0.5;
+fzero = 0;    
+% fzero=-0.5;
 x0=0;
 
 %Decrease tvec step size by factor of Dtfac to ensure convergence
@@ -84,7 +86,7 @@ end
 
 
 for j = 2:N
-    noiseampl=0.2;
+    noiseampl=0;
     noisevec(j) = ndW(j);
 
     %Deterministic integral
@@ -107,7 +109,7 @@ Xsto(2,:) = fsto(1:Dtfac:N);
 Fext2(1,:) = Fext(1:Dtfac:N);
 NVec(1,:) = noisevec(1:Dtfac:N);
 
-plotyn = 0;
+plotyn = 1;
 if plotyn == 1
  % close all
 figure
