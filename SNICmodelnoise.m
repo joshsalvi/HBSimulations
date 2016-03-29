@@ -31,7 +31,7 @@ xzero = 1;
 yzero = -1;
 
 % Add external forcing if desired
-sinusoidalstim = 0; pulsestim = 1;  % pulse or sinusoid?
+sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
 %Fextmax = 1;        % amplitude of sinusoidal stim OR pulse
 
 
@@ -80,6 +80,9 @@ hbmodelstim = 0;
 Fc = fr;
 k = Fextmax;
 noiselevel = NoiseSTD * 2;
+
+Fextsto = randn(1,N);
+Fextdet = Fextsto;
 
 if hbmodelstim == 1
     [Xdet, Xsto] = hbtoymodel(Fc,k,noiselevel,0.2,0.2,Ftvec);
