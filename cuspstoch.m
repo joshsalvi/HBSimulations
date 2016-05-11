@@ -66,7 +66,6 @@ xdet(j) = xdet(j-1) + Dt*(b1 + b2*xdet(j-1) - xdet(j-1)^3 + Fext(j));
 
 %Stochastic integral
 xsto(j) = xsto(j-1) + Dt*(b1 + b2*xsto(j-1) - xsto(j-1)^3 + Fext(j)) + xNoiseSTD*dW(j);
-
 end
 
 
