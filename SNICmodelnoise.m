@@ -122,7 +122,7 @@ Fext = Fext(1:Dtfac:N);
 
 
 % Make a plot of the data?
-plotyn=1;
+plotyn=0;
 close all
 if plotyn==1
     figure;

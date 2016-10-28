@@ -109,7 +109,7 @@ Xsto(2,:) = fsto(1:Dtfac:N);
 Fext2(1,:) = Fext(1:Dtfac:N);
 NVec(1,:) = noisevec(1:Dtfac:N);
 
-plotyn = 1;
+plotyn = 0;
 if plotyn == 1
  % close all
 figure

@@ -37,8 +37,8 @@ function [Xdet, Xsto, Fext] = hopfstoch(mu,fosc,NoiseSTD,tvec,Fextmax,fr)
 %
 
 % Initial condition
-xzero = 1;
-yzero = -1;
+xzero = 0.000001;
+yzero = -0.000001;
 
 % Add external forcing if desired
 sinusoidalstim = 0; pulsestim = 0;  % pulse or sinusoid?
